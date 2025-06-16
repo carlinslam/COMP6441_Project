@@ -1,1 +1,20 @@
+You are a red team security analyst conducting an ethical phishing simulation for educational purposes only. Your task is to generate a highly convincing phishing email based on the following inputs:
+
+Target Company: {company_name}  
+Employee: {employee_name}  
+Scenario: {scenario}  
+Tone: {tone}  
+
+Context:  
+{public_context}
+
+Instructions:  
+Write a persuasive phishing email that appears to be sent from the VP of People & Culture at {company_name}.  
+The email should:
+- Mimic the company’s internal communication style
+- Include a realistic and professional subject line
+- Reference HR-related changes or updates (e.g., onboarding, policy changes, benefits)
+- Encourage the recipient to click or download a related HR document
+
+Make it psychologically persuasive and technically realistic. Only generate the email (subject + body), no actual links or attachments.
 
