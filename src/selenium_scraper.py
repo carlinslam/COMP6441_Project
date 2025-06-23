@@ -9,7 +9,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 def get_linkedin_profile(url, cookies_json='cookies.json'):
     # Setup headless Chrome
     opts = Options()
-    opts.add_argument("--headless=new")
+
 
     # Use Service object (Selenium 4.6+)
     service = Service(ChromeDriverManager().install())
