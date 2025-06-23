@@ -50,6 +50,35 @@ def get_linkedin_profile(url):
         headline = safe_text(".text-body-medium.break-words")
         location = safe_text(".text-body-small.inline.t-black--light.break-words")
         company_name = safe_text("section.pv-profile-section.experience-section ul li span[aria-hidden='true']")
+                wait = WebDriverWait(driver, 15)
+
+        # Wait for and extract name
+        try:
+            name_elem = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h1.text-heading-xlarge")))
+            name = name_elem.text.strip()
+        except:
+            name = "N/A"
+
+        # Headline
+        try:
+            headline = driver.find_element(By.CSS_SELECTOR, "div.text-body-medium.break-words").text.strip()
+        except:
+            headline = "N/A"
+
+        # Location
+        try:
+            location = driver.find_element(By.CSS_SELECTOR, "span.text-body-small.inline.t-black--light.break-words").text.strip()
+        except:
+            location = "N/A"
+
+        # Company (more robust approach)
+        try:
+            experience_section = driver.find_element(By.ID, "experience")
+            company_elem = experience_section.find_element(By.CSS_SELECTOR, "span.t-14.t-normal")
+            company_name = company_elem.text.strip()
+        except:
+            company_name = "N/A"
+
 
         data = {
             "employee_name": name,
