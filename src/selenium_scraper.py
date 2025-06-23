@@ -76,3 +76,12 @@ def get_linkedin_profile(url, cookies_json='cookies.json'):
         driver.quit()
         print("🛑 Browser closed.")
 
+if __name__ == "__main__":
+    print("🔗 LinkedIn Profile Scraper")
+    link = input("Paste LinkedIn URL: ").strip()
+    profile = get_linkedin_profile(link)
+    os.makedirs("profiles", exist_ok=True)
+    fname = f"profiles/{profile['company_name'].replace(' ', '_')}_{profile['employee_name'].replace(' ', '_')}.json"
+    with open(fname, "w") as f:
+        json.dump(profile, f, indent=2)
+    print("📁 Profile saved to:", fname)
