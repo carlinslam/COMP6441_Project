@@ -11,7 +11,7 @@ import os, time, json
 LI_AT_COOKIE = "AQEFAQ8BAAAAABYsq9MAAAGWkJYWzwAAAZekTQtIVgAAsnVybjpsaTplbnRlcnByaXNlQXV0aFRva2VuOmVKeGpaQUFCK2RzMklFcTRlMVU2aUdaZXZlUWlJNGhScm1kekRjeUlQRmJCeDhBTUFLNmdDR3M9XnVybjpsaTplbnRlcnByaXNlUHJvZmlsZToodXJuOmxpOmVudGVycHJpc2VBY2NvdW50OjIwODc3NDAsMzI3OTIwMjMxKV51cm46bGk6bWVtYmVyOjExOTE3MzIyMzclDmCpVHYJCMOxj2gpwuEENZcfemr0hY6hL54yLnlghKOULMt9U71lpeudv08CocQlqVZdPyNV5wYvMvUIoy2pOlFSKK38N0PtielMACNgQ17WwRtXlWeDncFQUO-wvVGE9HGOQ3CmmNCxP9gBbd802T8mbE8GNgXzx29QkQPfy4YROuBg9INd6CKUAD74EPLal40T"
 
 def get_linkedin_profile(url):
-    print("Launching Chrome...")
+    print("Launching headless Chrome...")
 
     opts = Options()
     opts.add_argument("--no-sandbox")
@@ -20,7 +20,6 @@ def get_linkedin_profile(url):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
 
     try:
-        # Step 1: Log in using cookie
         driver.get("https://www.linkedin.com")
         driver.add_cookie({
             "name": "li_at",
@@ -33,35 +32,39 @@ def get_linkedin_profile(url):
         driver.refresh()
         time.sleep(2)
 
-        # Step 2: Visit target profile
         print(f"Visiting profile: {url}")
         driver.get(url)
         wait = WebDriverWait(driver, 15)
 
-        # Step 3: Extract name
+        # Name
         try:
-            name_elem = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h1")))
+            name_elem = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h1.text-heading-xlarge")))
             name = name_elem.text.strip()
         except:
             name = "N/A"
 
-        # Extract headline
+        # Headline
         try:
             headline = driver.find_element(By.CSS_SELECTOR, "div.text-body-medium.break-words").text.strip()
         except:
             headline = "N/A"
 
-        # Extract location
+        # Location
         try:
             location = driver.find_element(By.CSS_SELECTOR, "span.text-body-small.inline.t-black--light.break-words").text.strip()
         except:
             location = "N/A"
 
-        # Extract company name (first job title under Experience)
+        # Job Title
         try:
-            experience_section = driver.find_element(By.XPATH, "//section[contains(@id, 'experience')]")
-            company_elem = experience_section.find_element(By.XPATH, ".//span[contains(@class, 't-14') and contains(@class, 't-normal')]")
-            company_name = company_elem.text.strip()
+            job_title = driver.find_element(By.XPATH, "//div[contains(@class, 'align-items-center')]//span[@aria-hidden='true']").text.strip()
+        except:
+            job_title = "N/A"
+
+        # Company Name
+        try:
+            company_elem = driver.find_elements(By.XPATH, "//span[contains(@class, 't-14') and @aria-hidden='true']")
+            company_name = company_elem[0].text.strip() if company_elem else "N/A"
         except:
             company_name = "N/A"
 
@@ -69,8 +72,9 @@ def get_linkedin_profile(url):
             "employee_name": name,
             "headline": headline,
             "location": location,
-            "linkedin_url": url,
+            "job_title": job_title,
             "company_name": company_name,
+            "linkedin_url": url,
             "public_context": ""
         }
 
