@@ -1,3 +1,4 @@
+from selenium.webdriver.chrome.service import Service 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
@@ -14,7 +15,7 @@ def get_linkedin_profile(url, cookies_json='cookies.json'):
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
 
-    driver = webdriver.Chrome(ChromeDriverManager().install(), options=opts)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
 
     try:
         driver.get("https://www.linkedin.com")
