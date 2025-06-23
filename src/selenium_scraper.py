@@ -2,15 +2,18 @@ import time
 import json
 import os
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 def get_linkedin_profile(url, cookies_json='cookies.json'):
     # Setup headless Chrome
     opts = Options()
     opts.add_argument("--headless=new")
-    driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=opts)
 
+    # Use Service object (Selenium 4.6+)
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=opts)
 
     # Load cookies if available
     if os.path.exists(cookies_json):
@@ -27,19 +30,20 @@ def get_linkedin_profile(url, cookies_json='cookies.json'):
     driver.get(url)
     time.sleep(5)  # wait for page load
 
-    # Extract name, headline, location, company
+    # Extract profile data
     name = driver.find_element("css selector", ".text-heading-xlarge").text
     headline = driver.find_element("css selector", ".text-body-medium.break-words").text
     location = driver.find_element("css selector", ".text-body-small.inline.t-black--light.break-words").text
 
-    exp = driver.find_elements("css selector", "#experience-section .pv-entity__company-name")[0].text
+    exp_elements = driver.find_elements("css selector", "#experience-section .pv-entity__company-name")
+    company = exp_elements[0].text if exp_elements else "N/A"
 
     data = {
         "employee_name": name,
         "headline": headline,
         "location": location,
         "linkedin_url": url,
-        "company_name": exp,
+        "company_name": company,
         "public_context": ""
     }
 
@@ -50,7 +54,7 @@ if __name__ == "__main__":
     link = input("Paste LinkedIn URL: ").strip()
     profile = get_linkedin_profile(link)
     os.makedirs("profiles", exist_ok=True)
-    fname = f"profiles/{profile['company_name']}_{profile['employee_name']}.json"
+    fname = f"profiles/{profile['company_name'].replace(' ', '_')}_{profile['employee_name'].replace(' ', '_')}.json"
     with open(fname, "w") as f:
         json.dump(profile, f, indent=2)
     print("✅ Saved profile:", fname)
