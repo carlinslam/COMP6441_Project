@@ -9,7 +9,8 @@ def get_linkedin_profile(url, cookies_json='cookies.json'):
     # Setup headless Chrome
     opts = Options()
     opts.add_argument("--headless=new")
-    driver = webdriver.Chrome(ChromeDriverManager().install(), options=opts)
+    driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=opts)
+
 
     # Load cookies if available
     if os.path.exists(cookies_json):
