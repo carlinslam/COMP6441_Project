@@ -21,8 +21,8 @@ def get_linkedin_profile(url):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
 
     try:
-        # Set cookie before navigating to the profile
-        driver.get("https://www.linkedin.com")  # Required before setting any cookie
+        # Step 1: Add li_at cookie
+        driver.get("https://www.linkedin.com")
         driver.add_cookie({
             "name": "li_at",
             "value": LI_AT_COOKIE,
@@ -34,51 +34,34 @@ def get_linkedin_profile(url):
         driver.refresh()
         time.sleep(2)
 
-        # Visit LinkedIn profile
+        # Step 2: Go to profile
         print(f"Visiting profile: {url}")
         driver.get(url)
-        time.sleep(5)
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 15)
 
-        def safe_text(selector):
-            try:
-                return driver.find_element(By.CSS_SELECTOR, selector).text.strip()
-            except:
-                return "N/A"
-
-        name = safe_text(".text-heading-xlarge")
-        headline = safe_text(".text-body-medium.break-words")
-        location = safe_text(".text-body-small.inline.t-black--light.break-words")
-        company_name = safe_text("section.pv-profile-section.experience-section ul li span[aria-hidden='true']")
-                wait = WebDriverWait(driver, 15)
-
-        # Wait for and extract name
+        # Step 3: Extract fields
         try:
             name_elem = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h1.text-heading-xlarge")))
             name = name_elem.text.strip()
         except:
             name = "N/A"
 
-        # Headline
         try:
             headline = driver.find_element(By.CSS_SELECTOR, "div.text-body-medium.break-words").text.strip()
         except:
             headline = "N/A"
 
-        # Location
         try:
             location = driver.find_element(By.CSS_SELECTOR, "span.text-body-small.inline.t-black--light.break-words").text.strip()
         except:
             location = "N/A"
 
-        # Company (more robust approach)
         try:
             experience_section = driver.find_element(By.ID, "experience")
             company_elem = experience_section.find_element(By.CSS_SELECTOR, "span.t-14.t-normal")
             company_name = company_elem.text.strip()
         except:
             company_name = "N/A"
-
 
         data = {
             "employee_name": name,
@@ -108,4 +91,5 @@ if __name__ == "__main__":
 
     with open(fname, "w") as f:
         json.dump(profile, f, indent=2)
+
     print("Profile saved to:", fname)
