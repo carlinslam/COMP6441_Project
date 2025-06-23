@@ -1,39 +1,55 @@
-from linkedin_api import Linkedin
+import time
 import json
 import os
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 
-# Initialize the LinkedIn API using your li_at cookie only
-api = Linkedin(li_at_cookie="AQEFAQ8BAAAAABYsq9MAAAGWkJYWzwAAAZekTQtIVgAAsnVybjpsaTplbnRlcnByaXNlQXV0aFRva2VuOmVKeGpaQUFCK2RzMklFcTRlMVU2aUdaZXZlUWlJNGhScm1kekRjeUlQRmJCeDhBTUFLNmdDR3M9XnVybjpsaTplbnRlcnByaXNlUHJvZmlsZToodXJuOmxpOmVudGVycHJpc2VBY2NvdW50OjIwODc3NDAsMzI3OTIwMjMxKV51cm46bGk6bWVtYmVyOjExOTE3MzIyMzclDmCpVHYJCMOxj2gpwuEENZcfemr0hY6hL54yLnlghKOULMt9U71lpeudv08CocQlqVZdPyNV5wYvMvUIoy2pOlFSKK38N0PtielMACNgQ17WwRtXlWeDncFQUO-wvVGE9HGOQ3CmmNCxP9gBbd802T8mbE8GNgXzx29QkQPfy4YROuBg9INd6CKUAD74EPLal40T")
-def extract_profile_info(profile_url):
-    # Extract public identifier from LinkedIn URL
-    username = profile_url.strip('/').split('/')[-1]
+def get_linkedin_profile(url, cookies_json='cookies.json'):
+    # Setup headless Chrome
+    opts = Options()
+    opts.add_argument("--headless=new")
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=opts)
 
-    profile = api.get_profile(username)
+    # Load cookies if available
+    if os.path.exists(cookies_json):
+        driver.get("https://www.linkedin.com")
+        for cookie in json.load(open(cookies_json)):
+            driver.add_cookie(cookie)
+    else:
+        print("Please login manually to LinkedIn in this Chrome instance.")
+        driver.get("https://www.linkedin.com/login")
+        input("Press Enter once logged in...")
+        json.dump(driver.get_cookies(), open(cookies_json, "w"))
+        print("👉 Cookies saved to", cookies_json)
 
-    employee_name = f"{profile.get('firstName', '')} {profile.get('lastName', '')}".strip()
-    headline = profile.get("headline", "N/A")
-    location = profile.get("geoLocationName", "N/A")
+    driver.get(url)
+    time.sleep(5)  # wait for page load
 
-    experiences = profile.get("experience", [])
-    company = experiences[0].get("companyName", "N/A") if experiences else "N/A"
+    # Extract name, headline, location, company
+    name = driver.find_element("css selector", ".text-heading-xlarge").text
+    headline = driver.find_element("css selector", ".text-body-medium.break-words").text
+    location = driver.find_element("css selector", ".text-body-small.inline.t-black--light.break-words").text
+
+    exp = driver.find_elements("css selector", "#experience-section .pv-entity__company-name")[0].text
 
     data = {
-        "employee_name": employee_name,
+        "employee_name": name,
         "headline": headline,
         "location": location,
-        "linkedin_url": profile_url,
-        "company_name": company,
-        "public_context": "Recent updates and internal events from company news."
+        "linkedin_url": url,
+        "company_name": exp,
+        "public_context": ""
     }
 
-    os.makedirs("profiles", exist_ok=True)
-    filename = f"profiles/{company.replace(' ', '_')}_{employee_name.replace(' ', '_')}.json"
-    with open(filename, "w") as f:
-        json.dump(data, f, indent=2)
-
-    print(f"\n✅ Saved profile to {filename}")
+    driver.quit()
     return data
 
 if __name__ == "__main__":
-    profile_link = input("Paste LinkedIn profile URL: ").strip()
-    extract_profile_info(profile_link)
+    link = input("Paste LinkedIn URL: ").strip()
+    profile = get_linkedin_profile(link)
+    os.makedirs("profiles", exist_ok=True)
+    fname = f"profiles/{profile['company_name']}_{profile['employee_name']}.json"
+    with open(fname, "w") as f:
+        json.dump(profile, f, indent=2)
+    print("✅ Saved profile:", fname)
