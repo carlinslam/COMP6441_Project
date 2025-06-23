@@ -38,7 +38,7 @@ def get_linkedin_profile(url):
 
         # Name
         try:
-            name_elem = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h1.text-heading-xlarge")))
+            name_elem = wait.until(EC.presence_of_element_located((By.XPATH, "//h1[contains(@class, 'inline') and contains(@class, 'break-words')]")))
             name = name_elem.text.strip()
         except:
             name = "N/A"
@@ -63,8 +63,8 @@ def get_linkedin_profile(url):
 
         # Company Name
         try:
-            company_elem = driver.find_elements(By.XPATH, "//span[contains(@class, 't-14') and @aria-hidden='true']")
-            company_name = company_elem[0].text.strip() if company_elem else "N/A"
+            company_elem = wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(@class, 't-14') and contains(@class, 't-normal')]/span[@aria-hidden='true']")))
+            company_name = company_elem.text.split("·")[0].strip()
         except:
             company_name = "N/A"
 
