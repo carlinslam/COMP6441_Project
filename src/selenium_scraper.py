@@ -1,58 +1,48 @@
-from selenium.webdriver.chrome.service import Service 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import json, os, time
+import os, time, json
 
-def get_linkedin_profile(url, cookies_json='cookies.json'):
-    print("🟡 Launching headless Chrome...")
+# REPLACE THIS with your actual li_at cookie
+LI_AT_COOKIE = "AQEFAQ8BAAAAABYsq9MAAAGWkJYWzwAAAZekTQtIVgAAsnVybjpsaTplbnRlcnByaXNlQXV0aFRva2VuOmVKeGpaQUFCK2RzMklFcTRlMVU2aUdaZXZlUWlJNGhScm1kekRjeUlQRmJCeDhBTUFLNmdDR3M9XnVybjpsaTplbnRlcnByaXNlUHJvZmlsZToodXJuOmxpOmVudGVycHJpc2VBY2NvdW50OjIwODc3NDAsMzI3OTIwMjMxKV51cm46bGk6bWVtYmVyOjExOTE3MzIyMzclDmCpVHYJCMOxj2gpwuEENZcfemr0hY6hL54yLnlghKOULMt9U71lpeudv08CocQlqVZdPyNV5wYvMvUIoy2pOlFSKK38N0PtielMACNgQ17WwRtXlWeDncFQUO-wvVGE9HGOQ3CmmNCxP9gBbd802T8mbE8GNgXzx29QkQPfy4YROuBg9INd6CKUAD74EPLal40T"
+
+def get_linkedin_profile(url):
+    print("Launching headless Chrome...")
 
     opts = Options()
-    opts.add_argument("--headless=new")  # Comment this for manual login
+    opts.add_argument("--headless=new")
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
 
     try:
-        driver.get("https://www.linkedin.com")
+        # Set cookie before navigating to the profile
+        driver.get("https://www.linkedin.com")  # Required before setting any cookie
+        driver.add_cookie({
+            "name": "li_at",
+            "value": LI_AT_COOKIE,
+            "domain": ".linkedin.com",
+            "path": "/",
+            "secure": True,
+            "httpOnly": True
+        })
+        driver.refresh()
+        time.sleep(2)
 
-        # Step 1: Load cookies or perform manual login
-        if os.path.exists(cookies_json):
-            print("🟡 Loading saved cookies...")
-            try:
-                with open(cookies_json, "r") as f:
-                    cookies = json.load(f)
-                    for cookie in cookies:
-                        if "sameSite" in cookie and cookie["sameSite"] == "None":
-                            cookie["sameSite"] = "Strict"  # workaround for compatibility
-                        driver.add_cookie(cookie)
-                driver.refresh()
-                time.sleep(3)
-            except Exception as e:
-                print("⚠️ Failed to apply cookies. Manual login required.")
-                os.remove(cookies_json)
-                return get_linkedin_profile(url, cookies_json)
-        else:
-            print("🔒 Manual login required — headless mode may need to be disabled.")
-            driver.get("https://www.linkedin.com/login")
-            input("🔑 Press Enter once logged in...")
-            json.dump(driver.get_cookies(), open(cookies_json, "w"))
-            print("✅ Cookies saved to:", cookies_json)
-
-        # Step 2: Visit profile URL
-        print(f"🔍 Visiting profile: {url}")
+        # Visit LinkedIn profile
+        print(f"Visiting profile: {url}")
         driver.get(url)
         time.sleep(5)
         wait = WebDriverWait(driver, 10)
 
-        # Step 3: Scrape information
-        def safe_text(selector, by=By.CSS_SELECTOR):
+        def safe_text(selector):
             try:
-                return driver.find_element(by, selector).text.strip()
+                return driver.find_element(By.CSS_SELECTOR, selector).text.strip()
             except:
                 return "N/A"
 
@@ -70,19 +60,23 @@ def get_linkedin_profile(url, cookies_json='cookies.json'):
             "public_context": ""
         }
 
-        print("✅ Scraping complete.")
+        print("Scraping complete.")
         return data
 
     finally:
         driver.quit()
-        print("🛑 Browser closed.")
+        print("Browser closed.")
 
 if __name__ == "__main__":
-    print("🔗 LinkedIn Profile Scraper")
+    print("LinkedIn Profile Scraper")
     link = input("Paste LinkedIn URL: ").strip()
     profile = get_linkedin_profile(link)
     os.makedirs("profiles", exist_ok=True)
-    fname = f"profiles/{profile['company_name'].replace(' ', '_')}_{profile['employee_name'].replace(' ', '_')}.json"
+
+    company = profile['company_name'].replace(' ', '_') if profile['company_name'] != "N/A" else "unknown_company"
+    name = profile['employee_name'].replace(' ', '_') if profile['employee_name'] != "N/A" else "unknown_person"
+    fname = f"profiles/{company}_{name}.json"
+
     with open(fname, "w") as f:
         json.dump(profile, f, indent=2)
-    print("📁 Profile saved to:", fname)
+    print("Profile saved to:", fname)
