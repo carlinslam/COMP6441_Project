@@ -14,7 +14,6 @@ def get_linkedin_profile(url):
     print("Launching headless Chrome...")
 
     opts = Options()
-    opts.add_argument("--headless=new")
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
 
