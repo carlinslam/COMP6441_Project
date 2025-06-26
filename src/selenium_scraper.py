@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os, time, json
+import requests
 
 # REPLACE THIS with your actual li_at cookie
 LI_AT_COOKIE = "AQEFAQ8BAAAAABYsq9MAAAGWkJYWzwAAAZekTQtIVgAAsnVybjpsaTplbnRlcnByaXNlQXV0aFRva2VuOmVKeGpaQUFCK2RzMklFcTRlMVU2aUdaZXZlUWlJNGhScm1kekRjeUlQRmJCeDhBTUFLNmdDR3M9XnVybjpsaTplbnRlcnByaXNlUHJvZmlsZToodXJuOmxpOmVudGVycHJpc2VBY2NvdW50OjIwODc3NDAsMzI3OTIwMjMxKV51cm46bGk6bWVtYmVyOjExOTE3MzIyMzclDmCpVHYJCMOxj2gpwuEENZcfemr0hY6hL54yLnlghKOULMt9U71lpeudv08CocQlqVZdPyNV5wYvMvUIoy2pOlFSKK38N0PtielMACNgQ17WwRtXlWeDncFQUO-wvVGE9HGOQ3CmmNCxP9gBbd802T8mbE8GNgXzx29QkQPfy4YROuBg9INd6CKUAD74EPLal40T"
@@ -99,3 +100,52 @@ if __name__ == "__main__":
         json.dump(profile, f, indent=2)
 
     print("Profile saved to:", fname)
+
+def generate_email(data):
+    name = data.get("employee_name", "there")
+    job = data.get("job_title", "your role")
+    company = data.get("company_name", "your company")
+    link = "https://your-simulation.edu/invite-link"  # simulation placeholder
+
+    email_body = f"""Subject: Invitation to Speak at UNSW Tech Talks 2025
+
+Hi {name},
+
+We’re organizing a speaker series at UC Santa Barbara focusing on real-world AI and cloud innovation. Given your work as {job} at {company}, we’d be honored to invite you as a guest speaker.
+
+Please review the proposed topics and schedule below:
+{link}
+
+Let us know if you’d be available. We’d love to feature your insights.
+
+Best regards,
+Karry Lam
+Outreach Coordinator
+UCSB Tech Talks
+"""
+
+    safe_name = name.replace(" ", "_").replace("(", "").replace(")", "")
+    company_safe = company.replace(" ", "_").replace("(", "").replace(")", "")
+    profile_dir = "profiles"
+    email_dir = "generated_emails"
+    os.makedirs(profile_dir, exist_ok=True)
+    os.makedirs(email_dir, exist_ok=True)
+
+    json_path = f"{profile_dir}/{company_safe}_{safe_name}.json"
+    email_path = f"{email_dir}/invite_{safe_name}.txt"
+
+    with open(json_path, "w") as f:
+        json.dump(data, f, indent=2)
+    with open(email_path, "w") as f:
+        f.write(email_body)
+
+    print("Profile saved to:", json_path)
+    print("Email saved to:", email_path)
+
+
+if __name__ == "__main__":
+    print("LinkedIn Profile Scraper + Email Generator")
+    link = input("Paste LinkedIn URL: ").strip()
+    profile_data = get_linkedin_profile(link)
+    generate_email(profile_data)
+
