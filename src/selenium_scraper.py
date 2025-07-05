@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     # Generate email
     generate_email(profile_data)
-    print("Profile saved to:", fname)
+
 
 def generate_email(data):
     name = data.get("employee_name", "there")
@@ -152,10 +152,4 @@ UNSW Tech Talks
     print("Profile saved to:", json_path)
     print("Email saved to:", email_path)
 
-
-if __name__ == "__main__":
-    print("LinkedIn Profile Scraper + Email Generator")
-    link = input("Paste LinkedIn URL: ").strip()
-    profile_data = get_linkedin_profile(link)
-    generate_email(profile_data)
 
