@@ -17,8 +17,7 @@ def generate_email(data):
     company = data.get("company_name", "your company")
     link = "https://your-simulation.edu/invite-link"  # simulation placeholder
 
-
-# Generate a prompt for the AI
+    # Generate a prompt for the AI
     prompt = f"""
 You are an outreach coordinator. Write a professional and friendly email inviting {name}, a {job} at {company}, to be a guest speaker at the UNSW Tech Talks 2025. 
 Focus on AI and cloud innovation. End with a polite request for availability.
@@ -45,6 +44,7 @@ Focus on AI and cloud innovation. End with a polite request for availability.
         f.write(email_body)
 
     print("Email saved to:", email_path)
+
     
 def get_linkedin_profile(url):
     print("Launching headless Chrome...")
