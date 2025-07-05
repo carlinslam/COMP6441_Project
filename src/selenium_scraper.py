@@ -111,7 +111,7 @@ def generate_email(data):
 
 Hi {name},
 
-We’re organizing a speaker series at UC Santa Barbara focusing on real-world AI and cloud innovation. Given your work as {job} at {company}, we’d be honored to invite you as a guest speaker.
+We’re organizing a speaker series at UNSW focusing on real-world AI and cloud innovation. Given your work as {job} at {company}, we’d be honored to invite you as a guest speaker.
 
 Please review the proposed topics and schedule below:
 {link}
@@ -119,9 +119,9 @@ Please review the proposed topics and schedule below:
 Let us know if you’d be available. We’d love to feature your insights.
 
 Best regards,
-Karry Lam
+Carlins Lam
 Outreach Coordinator
-UCSB Tech Talks
+UNSW Tech Talks
 """
 
     safe_name = name.replace(" ", "_").replace("(", "").replace(")", "")
