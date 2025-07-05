@@ -87,18 +87,28 @@ def get_linkedin_profile(url):
         print("Browser closed.")
 
 if __name__ == "__main__":
-    print("LinkedIn Profile Scraper")
+    print("LinkedIn Profile Scraper + Email Generator")
     link = input("Paste LinkedIn URL: ").strip()
-    profile = get_linkedin_profile(link)
-    os.makedirs("profiles", exist_ok=True)
+    
+    try:
+        profile_data = get_linkedin_profile(link)
+    except Exception as e:
+        print("Failed to scrape profile:", e)
+        exit(1)
 
-    company = profile['company_name'].replace(' ', '_') if profile['company_name'] != "N/A" else "unknown_company"
-    name = profile['employee_name'].replace(' ', '_') if profile['employee_name'] != "N/A" else "unknown_person"
+    # Save profile JSON
+    os.makedirs("profiles", exist_ok=True)
+    company = profile_data.get('company_name', "unknown_company").replace(' ', '_')
+    name = profile_data.get('employee_name', "unknown_person").replace(' ', '_')
     fname = f"profiles/{company}_{name}.json"
 
     with open(fname, "w") as f:
-        json.dump(profile, f, indent=2)
+        json.dump(profile_data, f, indent=2)
 
+    print("Profile saved to:", fname)
+
+    # Generate email
+    generate_email(profile_data)
     print("Profile saved to:", fname)
 
 def generate_email(data):
