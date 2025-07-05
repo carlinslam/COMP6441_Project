@@ -6,9 +6,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os, time, json
+import ollama
 
 # REPLACE THIS with your actual li_at cookie
-LI_AT_COOKIE = "YOUR_COOKIE_HERE"
+LI_AT_COOKIE = "AQEFAQ8BAAAAABYsq9MAAAGWkJYWzwAAAZekTQtIVgAAsnVybjpsaTplbnRlcnByaXNlQXV0aFRva2VuOmVKeGpaQUFCK2RzMklFcTRlMVU2aUdaZXZlUWlJNGhScm1kekRjeUlQRmJCeDhBTUFLNmdDR3M9XnVybjpsaTplbnRlcnByaXNlUHJvZmlsZToodXJuOmxpOmVudGVycHJpc2VBY2NvdW50OjIwODc3NDAsMzI3OTIwMjMxKV51cm46bGk6bWVtYmVyOjExOTE3MzIyMzclDmCpVHYJCMOxj2gpwuEENZcfemr0hY6hL54yLnlghKOULMt9U71lpeudv08CocQlqVZdPyNV5wYvMvUIoy2pOlFSKK38N0PtielMACNgQ17WwRtXlWeDncFQUO-wvVGE9HGOQ3CmmNCxP9gBbd802T8mbE8GNgXzx29QkQPfy4YROuBg9INd6CKUAD74EPLal40T"
 
 def generate_email(data):
     name = data.get("employee_name", "there")
@@ -16,35 +17,35 @@ def generate_email(data):
     company = data.get("company_name", "your company")
     link = "https://your-simulation.edu/invite-link"  # simulation placeholder
 
-    email_body = f"""Subject: Invitation to Speak at UNSW Tech Talks 2025
 
-Hi {name},
-
-We’re organizing a speaker series at UNSW focusing on real-world AI and cloud innovation. Given your work as {job} at {company}, we’d be honored to invite you as a guest speaker.
-
-Please review the proposed topics and schedule below:
-{link}
-
-Let us know if you’d be available. We’d love to feature your insights.
-
-Best regards,
-Carlins Lam
-Outreach Coordinator
-UNSW Tech Talks
+# Generate a prompt for the AI
+    prompt = f"""
+You are an outreach coordinator. Write a professional and friendly email inviting {name}, a {job} at {company}, to be a guest speaker at the UNSW Tech Talks 2025. 
+Focus on AI and cloud innovation. End with a polite request for availability.
 """
 
+    # Query Ollama
+    response = ollama.chat(
+        model='llama3',
+        messages=[
+            {"role": "system", "content": "You are a professional email writer."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    email_body = response['message']['content']
+
+    # Save the email to a file
     safe_name = name.replace(" ", "_").replace("(", "").replace(")", "")
-    company_safe = company.replace(" ", "_").replace("(", "").replace(")", "")
     email_dir = "generated_emails"
     os.makedirs(email_dir, exist_ok=True)
 
     email_path = f"{email_dir}/invite_{safe_name}.txt"
-
     with open(email_path, "w") as f:
         f.write(email_body)
 
     print("Email saved to:", email_path)
-
+    
 def get_linkedin_profile(url):
     print("Launching headless Chrome...")
 
