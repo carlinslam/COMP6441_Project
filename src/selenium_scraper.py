@@ -133,9 +133,15 @@ if __name__ == "__main__":
 
     # Save profile JSON
     os.makedirs("profiles", exist_ok=True)
-    company = profile_data.get('company_name', "unknown_company").replace(' ', '_')
-    name = profile_data.get('employee_name', "unknown_person").replace(' ', '_')
+    company = profile_data.get('company_name') or "unknown_company"
+    name = profile_data.get('employee_name') or "unknown_person"
+
+    company = company.replace(' ', '_').replace('/', '_')
+    name = name.replace(' ', '_').replace('/', '_')
+
+    os.makedirs("profiles", exist_ok=True)
     fname = f"profiles/{company}_{name}.json"
+
 
     with open(fname, "w") as f:
         json.dump(profile_data, f, indent=2)
