@@ -16,19 +16,27 @@ def generate_email(data):
     name = data.get("employee_name", "there")
     job = data.get("job_title", "your role")
     company = data.get("company_name", "your company")
-    link = "https://your-simulation.edu/invite-link"  # simulation placeholder
 
-    # Generate a prompt for the AI
+    print("\n--- Custom Email Prompt Generator ---")
+    topic = input("What is the topic/focus of the email? (e.g., cybersecurity, AI innovation): ").strip()
+    purpose = input("What is the purpose of this email? (e.g., invite to speak, reset password, HR update): ").strip()
+    call_to_action = input("What is the final request? (e.g., confirm availability, click a link, open a document): ").strip()
+    tone = input("What tone do you want the email to use? (e.g., professional, urgent, friendly): ").strip()
+    event = input("Optional – name of event or occasion (or press Enter to skip): ").strip()
+
+    event_text = f" at {event}" if event else ""
+
+    # Construct prompt dynamically based on user inputs
     prompt = f"""
-You are an outreach coordinator. Write a professional and friendly email inviting {name}, a {job} at {company}, to be a guest speaker at the UNSW Tech Talks 2025. 
-Focus on AI and cloud innovation. End with a polite request for availability.
+You are a {tone} corporate communicator. Write an email to {name}, a {job} at {company}, regarding {topic}{event_text}. 
+The purpose of the email is to {purpose}. Conclude the email with a clear, polite instruction asking them to {call_to_action}.
 """
 
     # Query Ollama
     response = ollama.chat(
         model='llama3',
         messages=[
-            {"role": "system", "content": "You are a professional email writer."},
+            {"role": "system", "content": "You are a professional email writer skilled in business communication."},
             {"role": "user", "content": prompt}
         ]
     )
@@ -40,11 +48,13 @@ Focus on AI and cloud innovation. End with a polite request for availability.
     email_dir = "generated_emails"
     os.makedirs(email_dir, exist_ok=True)
 
-    email_path = f"{email_dir}/invite_{safe_name}.txt"
+    email_path = f"{email_dir}/custom_email_{safe_name}.txt"
     with open(email_path, "w") as f:
         f.write(email_body)
 
+    print("\nEmail generated successfully.")
     print("Email saved to:", email_path)
+
 
     
 def get_linkedin_profile(url):
